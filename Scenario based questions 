@@ -1,0 +1,578 @@
+S1 Queries (MySQL)
+Create Tables
+SQL
+CREATE TABLE Branch(
+    branch_name VARCHAR(50) PRIMARY KEY,
+    branch_city VARCHAR(50) NOT NULL,
+    assets DECIMAL(12,2)
+);
+
+CREATE TABLE Account(
+    Acc_no INT PRIMARY KEY,
+    branch_name VARCHAR(50),
+    balance DECIMAL(10,2) CHECK(balance >= 0),
+    FOREIGN KEY(branch_name) REFERENCES Branch(branch_name)
+);
+
+CREATE TABLE Customer(
+    cust_name VARCHAR(50) PRIMARY KEY,
+    cust_street VARCHAR(100),
+    cust_city VARCHAR(50)
+);
+
+CREATE TABLE Depositor(
+    cust_name VARCHAR(50),
+    acc_no INT,
+    PRIMARY KEY(cust_name, acc_no),
+    FOREIGN KEY(cust_name) REFERENCES Customer(cust_name),
+    FOREIGN KEY(acc_no) REFERENCES Account(Acc_no)
+);
+
+CREATE TABLE Loan(
+    loan_no INT PRIMARY KEY,
+    branch_name VARCHAR(50),
+    amount DECIMAL(10,2),
+    FOREIGN KEY(branch_name) REFERENCES Branch(branch_name)
+);
+
+CREATE TABLE Borrower(
+    cust_name VARCHAR(50),
+    loan_no INT,
+    PRIMARY KEY(cust_name, loan_no),
+    FOREIGN KEY(cust_name) REFERENCES Customer(cust_name),
+    FOREIGN KEY(loan_no) REFERENCES Loan(loan_no)
+);
+Queries
+1. Names of all branches in loan relation
+SQL
+SELECT DISTINCT branch_name
+FROM Loan;
+2. Loan numbers at Wadia College branch with amount > 12000
+SQL
+SELECT loan_no
+FROM Loan
+WHERE branch_name='Wadia College'
+AND amount > 12000;
+3. Customers having loan from bank
+SQL
+SELECT B.cust_name, L.loan_no, L.amount
+FROM Borrower B
+JOIN Loan L
+ON B.loan_no = L.loan_no;
+4. Customers having loan from Wadia College branch
+SQL
+SELECT DISTINCT B.cust_name
+FROM Borrower B
+JOIN Loan L
+ON B.loan_no = L.loan_no
+WHERE L.branch_name='Wadia College'
+ORDER BY B.cust_name;
+5. Distinct cities of branch
+SQL
+SELECT DISTINCT branch_city
+FROM Branch;
+
+
+S2 Queries
+1. Customers having both account and loan
+SQL
+SELECT DISTINCT D.cust_name
+FROM Depositor D
+JOIN Borrower B
+ON D.cust_name = B.cust_name;
+2. Customers having account or loan or both
+SQL
+SELECT cust_name FROM Depositor
+UNION
+SELECT cust_name FROM Borrower;
+3. Customers having account but no loan
+SQL
+SELECT cust_name
+FROM Depositor
+WHERE cust_name NOT IN
+(
+    SELECT cust_name FROM Borrower
+);
+4. Average balance at Wadia College branch
+SQL
+SELECT AVG(balance) AS Average_Balance
+FROM Account
+WHERE branch_name='Wadia College';
+5. Number of depositors at each branch
+SQL
+SELECT A.branch_name, COUNT(D.cust_name) AS No_Of_Depositors
+FROM Account A
+JOIN Depositor D
+ON A.Acc_no = D.acc_no
+GROUP BY A.branch_name;
+S3 Queries
+1. Branches where average account balance > 15000
+SQL
+SELECT branch_name
+FROM Account
+GROUP BY branch_name
+HAVING AVG(balance) > 15000;
+2. Number of tuples in customer relation
+SQL
+SELECT COUNT(*) AS Total_Customers
+FROM Customer;
+3. Total loan amount given by bank
+SQL
+SELECT SUM(amount) AS Total_Loan
+FROM Loan;
+4. Delete loans between 1300 and 1500
+SQL
+DELETE FROM Loan
+WHERE amount BETWEEN 1300 AND 1500;
+5. Average account balance at each branch
+SQL
+SELECT branch_name, AVG(balance) AS Avg_Balance
+FROM Account
+GROUP BY branch_name;
+6. Customer names starting with P
+SQL
+SELECT cust_name, cust_city
+FROM Customer
+WHERE cust_name LIKE 'P%';
+
+
+S4 Queries
+Create Tables
+SQL
+CREATE TABLE Cust_Master(
+    Cust_no VARCHAR(10) PRIMARY KEY,
+    Cust_name VARCHAR(50) NOT NULL,
+    Cust_addr VARCHAR(100)
+);
+
+CREATE TABLE Orders(
+    Order_no INT PRIMARY KEY,
+    Cust_no VARCHAR(10),
+    Order_date DATE,
+    Qty_Ordered INT,
+    FOREIGN KEY(Cust_no) REFERENCES Cust_Master(Cust_no)
+);
+
+CREATE TABLE Product(
+    Product_no INT PRIMARY KEY,
+    Product_name VARCHAR(50),
+    Order_no INT,
+    FOREIGN KEY(Order_no) REFERENCES Orders(Order_no)
+);
+Queries
+1. Names having A as second letter
+SQL
+SELECT Cust_name
+FROM Cust_Master
+WHERE Cust_name LIKE '_A%';
+2. Orders from customers
+SQL
+SELECT *
+FROM Orders
+WHERE Cust_no IN ('C1002','C1005','C1007','C1008');
+3. Clients from Bangalore or Mangalore
+SQL
+SELECT *
+FROM Cust_Master
+WHERE Cust_addr IN ('Banglore','Manglore');
+4. Customer names and purchased products
+SQL
+SELECT C.Cust_name, P.Product_name
+FROM Cust_Master C
+JOIN Orders O
+ON C.Cust_no = O.Cust_no
+JOIN Product P
+ON O.Order_no = P.Order_no;
+5. Create View1
+SQL
+CREATE VIEW View1 AS
+SELECT C.Cust_name, P.Product_name
+FROM Cust_Master C
+JOIN Orders O
+ON C.Cust_no = O.Cust_no
+JOIN Product P
+ON O.Order_no = P.Order_no;
+6. Product name and quantity purchased
+SQL
+SELECT C.Cust_name, P.Product_name, O.Qty_Ordered
+FROM Cust_Master C
+JOIN Orders O
+ON C.Cust_no = O.Cust_no
+JOIN Product P
+ON O.Order_no = P.Order_no;
+7. Join Operations
+Inner Join
+SQL
+SELECT *
+FROM Cust_Master C
+INNER JOIN Orders O
+ON C.Cust_no = O.Cust_no;
+Left Join
+SQL
+SELECT *
+FROM Cust_Master C
+LEFT JOIN Orders O
+ON C.Cust_no = O.Cust_no;
+Right Join
+SQL
+SELECT *
+FROM Cust_Master C
+RIGHT JOIN Orders O
+ON C.Cust_no = O.Cust_no;
+
+S5 Queries
+Create Tables
+SQL
+CREATE TABLE Employee(
+    emp_id INT PRIMARY KEY,
+    employee_name VARCHAR(50),
+    street VARCHAR(50),
+    city VARCHAR(50)
+);
+
+CREATE TABLE Company(
+    company_name VARCHAR(50) PRIMARY KEY,
+    city VARCHAR(50)
+);
+
+CREATE TABLE Works(
+    employee_name VARCHAR(50),
+    company_name VARCHAR(50),
+    salary DECIMAL(10,2),
+    FOREIGN KEY(employee_name) REFERENCES Employee(employee_name),
+    FOREIGN KEY(company_name) REFERENCES Company(company_name)
+);
+
+CREATE TABLE Manages(
+    employee_name VARCHAR(50),
+    manager_name VARCHAR(50)
+);
+Queries
+1. Employees working for TCS
+SQL
+SELECT employee_name
+FROM Works
+WHERE company_name='TCS';
+2. Employee and company names sorted
+SQL
+SELECT employee_name, company_name
+FROM Works
+ORDER BY company_name ASC, employee_name DESC;
+3. Change city of Infosys employees
+SQL
+UPDATE Employee
+SET city='Bangalore'
+WHERE employee_name IN
+(
+    SELECT employee_name
+    FROM Works
+    WHERE company_name='InfoSys'
+);
+4. Employees working for TechM with salary > 10000
+SQL
+SELECT E.employee_name, E.street, E.city
+FROM Employee E
+JOIN Works W
+ON E.employee_name = W.employee_name
+WHERE W.company_name='TechM'
+AND W.salary > 10000;
+5. Add Asset column
+SQL
+ALTER TABLE Company
+ADD Asset DECIMAL(12,2);
+
+S6 Queries
+1. Change city
+SQL
+UPDATE Employee
+SET city='Bangalore'
+WHERE employee_name IN
+(
+    SELECT employee_name
+    FROM Works
+    WHERE company_name='InfoSys'
+);
+2. Employees earning more than average salary
+SQL
+SELECT W1.employee_name
+FROM Works W1
+WHERE salary >
+(
+    SELECT AVG(W2.salary)
+    FROM Works W2
+    WHERE W1.company_name = W2.company_name
+);
+3. TechM employees salary >10000
+SQL
+SELECT E.employee_name, E.street, E.city
+FROM Employee E
+JOIN Works W
+ON E.employee_name=W.employee_name
+WHERE W.company_name='TechM'
+AND W.salary > 10000;
+4. Rename table
+SQL
+RENAME TABLE Manages TO Management;
+5. Create indexes
+SQL
+CREATE INDEX idx_emp_name
+ON Employee(employee_name);
+
+CREATE UNIQUE INDEX idx_emp_id
+ON Employee(emp_id);
+6. Display index information
+SQL
+SHOW INDEX FROM Employee;
+
+S7 Queries
+1. Create View1
+SQL
+CREATE VIEW View1 AS
+SELECT DISTINCT B.cust_name
+FROM Borrower B
+JOIN Loan L
+ON B.loan_no = L.loan_no
+WHERE L.branch_name='Pune_Station'
+ORDER BY B.cust_name;
+2. View2
+SQL
+CREATE VIEW View2 AS
+SELECT branch_name, branch_city
+FROM Branch;
+Insert
+SQL
+INSERT INTO View2
+VALUES('Shivaji Nagar','Pune');
+Update
+SQL
+UPDATE View2
+SET branch_city='Mumbai'
+WHERE branch_name='Shivaji Nagar';
+Delete
+SQL
+DELETE FROM View2
+WHERE branch_name='Shivaji Nagar';
+3. View3
+SQL
+CREATE VIEW View3 AS
+SELECT B.cust_name, D.acc_no
+FROM Borrower B
+JOIN Depositor D
+ON B.cust_name = D.cust_name;
+4. Left + Right Join Union
+SQL
+SELECT *
+FROM Customer C
+LEFT JOIN Depositor D
+ON C.cust_name = D.cust_name
+
+UNION
+
+SELECT *
+FROM Customer C
+RIGHT JOIN Borrower B
+ON C.cust_name = B.cust_name;
+5. Simple and Unique Index
+SQL
+CREATE INDEX idx_branch
+ON Branch(branch_name);
+
+CREATE UNIQUE INDEX idx_acc
+ON Account(Acc_no);
+6. Display indexes
+SQL
+SHOW INDEX FROM Branch;
+SHOW INDEX FROM Account;
+
+S8 Queries
+Create Tables
+SQL
+CREATE TABLE Companies(
+    comp_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    cost DECIMAL(10,2),
+    year INT
+);
+
+CREATE TABLE Orders(
+    comp_id INT,
+    domain VARCHAR(50),
+    quantity INT,
+    FOREIGN KEY(comp_id) REFERENCES Companies(comp_id)
+);
+Queries
+1. Inner Join
+SQL
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+INNER JOIN Orders O
+ON C.comp_id = O.comp_id;
+2. Left Join
+SQL
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+LEFT JOIN Orders O
+ON C.comp_id = O.comp_id;
+3. Right Join
+SQL
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+RIGHT JOIN Orders O
+ON C.comp_id = O.comp_id;
+4. Union
+SQL
+SELECT name, cost
+FROM Companies
+
+UNION
+
+SELECT domain, quantity
+FROM Orders;
+5. Create View1
+SQL
+CREATE VIEW View1 AS
+SELECT C.name, O.quantity
+FROM Companies C
+JOIN Orders O
+ON C.comp_id = O.comp_id;
+6. View2
+SQL
+CREATE VIEW View2 AS
+SELECT name, cost
+FROM Companies;
+7. Display Views
+SQL
+SELECT * FROM View1;
+SELECT * FROM View2;
+
+S9 Queries
+Create Tables
+SQL
+CREATE TABLE CUSTOMERS(
+    CNo INT PRIMARY KEY,
+    Cname VARCHAR(50),
+    Ccity VARCHAR(50),
+    CMobile VARCHAR(15)
+);
+
+CREATE TABLE ITEMS(
+    INo INT PRIMARY KEY,
+    Iname VARCHAR(50),
+    Itype VARCHAR(50),
+    Iprice DECIMAL(10,2),
+    Icount INT
+);
+
+CREATE TABLE PURCHASE(
+    PNo INT PRIMARY KEY,
+    Pdate DATE,
+    Pquantity INT,
+    CNo INT,
+    INo INT,
+    FOREIGN KEY(CNo) REFERENCES CUSTOMERS(CNo),
+    FOREIGN KEY(INo) REFERENCES ITEMS(INo)
+);
+Queries
+1. Stationary items price between 400 and 1000
+SQL
+SELECT *
+FROM ITEMS
+WHERE Itype='Stationary'
+AND Iprice BETWEEN 400 AND 1000;
+2. Change mobile number of Gopal
+SQL
+UPDATE CUSTOMERS
+SET CMobile='9876543210'
+WHERE Cname='Gopal';
+3. Item with maximum price
+SQL
+SELECT *
+FROM ITEMS
+WHERE Iprice =
+(
+    SELECT MAX(Iprice)
+    FROM ITEMS
+);
+4. Purchases recent to oldest
+SQL
+SELECT *
+FROM PURCHASE
+ORDER BY Pdate DESC;
+5. Count customers in every city
+SQL
+SELECT Ccity, COUNT(*) AS Total_Customers
+FROM CUSTOMERS
+GROUP BY Ccity;
+6. Purchased quantity of Maya
+SQL
+SELECT P.Pquantity
+FROM PURCHASE P
+JOIN CUSTOMERS C
+ON P.CNo = C.CNo
+WHERE C.Cname='Maya';
+7. Create View
+SQL
+CREATE VIEW Stationary_View AS
+SELECT Iname, Iprice, Icount
+FROM ITEMS
+WHERE Itype='Stationary'
+ORDER BY Iprice DESC;
+P10 Trigger (MySQL)
+SQL
+CREATE TABLE Emp(
+    Emp_no INT PRIMARY KEY,
+    Emp_name VARCHAR(50),
+    Emp_salary DECIMAL(10,2)
+);
+
+CREATE TABLE Tracking(
+    Emp_no INT,
+    Emp_salary DECIMAL(10,2)
+);
+Insert Trigger
+SQL
+DELIMITER //
+
+CREATE TRIGGER trg_insert_salary
+AFTER INSERT ON Emp
+FOR EACH ROW
+BEGIN
+    IF NEW.Emp_salary < 50000 THEN
+        INSERT INTO Tracking
+        VALUES(NEW.Emp_no, NEW.Emp_salary);
+    END IF;
+END //
+
+DELIMITER ;
+Update Trigger
+SQL
+DELIMITER //
+
+CREATE TRIGGER trg_update_salary
+AFTER UPDATE ON Emp
+FOR EACH ROW
+BEGIN
+    IF NEW.Emp_salary < 50000 THEN
+        INSERT INTO Tracking
+        VALUES(NEW.Emp_no, NEW.Emp_salary);
+    END IF;
+END //
+
+DELIMITER ;
+Delete Trigger
+SQL
+DELIMITER //
+
+CREATE TRIGGER trg_delete_salary
+AFTER DELETE ON Emp
+FOR EACH ROW
+BEGIN
+    INSERT INTO Tracking
+    VALUES(OLD.Emp_no, OLD.Emp_salary);
+END //
+
+DELIMITER ;
+These are the MySQL solutions for the SQL scenarios from your PDF. �
+AIDS SE DBMSL - sample Qestions.pdf
+Confidence: 97%
+Assumptions: Used standard MySQL 8+ syntax. A few Oracle-style PL/SQL questions from the PDF were skipped because you specifically asked for MySQL scenarios.
